@@ -14,14 +14,14 @@ import matplotlib.pyplot as plt
 from mpl_toolkits import mplot3d
 from stl import mesh
 import imageio
+import sys, getopt
 
-# USER´s VARIABLES
+# USERs VARIABLES
 # General parameters
-filename_stl = "T-REX skull.stl"
-filename_gif = "T-Rex skull.gif"
-path = "frames/"
+inputfile = "T-REX skull.stl"
+outputfile = "T-Rex skull.gif"
 
-# GIF´s parameters
+# GIFs parameters
 frames = 25
 duration_frame = 0.1
 
@@ -34,16 +34,20 @@ x_offset = 0
 y_offset = 0
 z_offset = 0
 
+path = "frames/"
+
 # Checks that input paratmeters are correct
 def initialize():
     global frames
     if (frames<=0):
         frames = 25
 
+    print(frames)
+
 # Loads the STL file
 def loadSTL():
     global stl_mesh
-    stl_mesh = mesh.Mesh.from_file(filename_stl)
+    stl_mesh = mesh.Mesh.from_file(inputfile)
 
 def rotateSTL():
     stl_mesh.rotate(rotation_axises, math.radians(rotation_angle))
@@ -107,10 +111,85 @@ def createGif():
         if file_name.endswith('.png'):
             file_path = os.path.join(path, file_name)
             images.append(imageio.imread(file_path))
-    imageio.mimsave(filename_gif, images, duration = duration_frame)
+    imageio.mimsave(outputfile, images, duration = duration_frame)
+
+# Separate the string into a list of floats
+def getList(strlist,separator=","):
+    return list(map(float,strlist.split(separator)))
+
 
 # MAIN
-def main():
+def main(argv):
+
+    global inputfile, outputfile
+
+    # GIFs parameters
+    global frames, duration_frame
+
+    # Visualization parameters
+    global init_angle, elevation, rotation_axises, rotation_angle, x_offset, y_offset, z_offset
+               
+
+    try:
+         opts, args = getopt.getopt(argv,"hi:o:r:n:t:a:e:d:r:",["help","ifile=","ofile=","nframe=", "duration=", "initangle=", "elevation=", "rotation=", "rotation_axis=", "offset="])
+    except getopt.GetoptError:
+         print('Error')
+         sys.exit(2)
+
+    for opt, arg in opts:
+        if opt in ("-h", "--help"):
+            print("Usage: GCode_to_Robtargets [-h | -i <inputfile> -o <outputfile>] ")
+            print('Options and arguments:')
+            print("-h     : Print this help message and exit")
+            
+            print("-i arg : Input the file to be get the frames for the gif (also --ifile)")
+            print("-o arg : Output filename of the gif (also --ofile)")
+            
+            print("-n arg : Amount of frames to generate (also --nframes). Default: 25")
+            print("-t arg : Duration of each frame (also --duration). Default: 0.1")            
+           
+            print("-a arg : Angle of the first frame (also --initangle). Default: -80")
+            print("-e arg : Elevation of the stl (also --elevation). Default: 8")
+            
+            print("-d arg : Degrees to rotate the stl (also --rotation_angle). Default: 90")
+            print("-r arg : Specify the rotation of the stl (also --rotation_axis). Default: [0,1,0]")
+            
+            print("--offset arg : Offset of the stl. Default: [0,0,0]")
+
+            sys.exit()
+            
+        elif opt in ("-i", "--ifile"):
+            inputfile = arg        
+            
+        elif opt in ("-o", "--ofile"):
+            outputfile = arg + ".gif"         
+            
+        elif opt in ("-n", "--nframe"):
+            frames = int(arg)
+            
+        elif opt in ("-t", "--duration"):
+            duration_frame = float(arg)
+
+        elif opt in ("-a", "--initangle"):
+            init_angle = float(arg)
+            
+        elif opt in ("-e", "--elevation"):
+            elevation = float(arg)    
+                
+        elif opt in ("-d", "--rotation_angle"):
+            rotation_angle = float(arg)     
+                                
+        elif opt in ("-r", "--rotation_axis"):            
+            rotation_axises = getList(arg)   
+            
+        elif opt in ("--offset"):
+            offsets = getList(arg)   
+            
+            x_offset = offsets[0]
+            y_offset = offsets[1]
+            z_offset = offsets[2]  
+            
+    
     print("Started")
     initialize()
     loadSTL()
@@ -120,9 +199,8 @@ def main():
     createGif()
     print("Finished")
     
-main()
-
-
+if __name__ == "__main__":
+    main(sys.argv[1:])
     
 
 
