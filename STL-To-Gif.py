@@ -9,27 +9,27 @@
 
 # Imports
 import os, re, math, sys
+import sys, getopt, shutil
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits import mplot3d
 from stl import mesh
 import imageio
-import sys, getopt
 
 # USERs VARIABLES
 # General parameters
-inputfile = "T-REX skull.stl"
-outputfile = "T-Rex skull.gif"
+inputfile = None
+outputfile = None
 
 # GIFs parameters
 frames = 25
 duration_frame = 0.1
 
 # Visualization parameters
-init_angle = -80
-elevation = 8
-rotation_axises = [0.0, 1.0, 0.0]
-rotation_angle = 90
+init_angle = 0
+elevation = 0
+rotation_axises = [1.0, 0.0, 0.0]
+rotation_angle = 0
 x_offset = 0
 y_offset = 0
 z_offset = 0
@@ -38,17 +38,29 @@ path = "frames/"
 
 # Checks that input paratmeters are correct
 def initialize():
-    global frames
+    global frames, duration_frame, outputfile
+    
     if (frames<=0):
+        print("Setting default of frames to 25")
         frames = 25
 
-    print(frames)
+    if (duration_frame<=0):
+        print("Setting default duration to 0.1")
+        duration_frame = 0.1
+
+    if inputfile == None:
+        print("Error: Inputfile not specified")
+        sys.exit(2)
+
+    if outputfile == None:
+        outputfile = "output.gif"
 
 # Loads the STL file
 def loadSTL():
     global stl_mesh
     stl_mesh = mesh.Mesh.from_file(inputfile)
 
+# Rotate the STL
 def rotateSTL():
     stl_mesh.rotate(rotation_axises, math.radians(rotation_angle))
 
@@ -76,7 +88,7 @@ def createFrames():
     axes = mplot3d.Axes3D(figure)
 
     # Add STL vectors to the plot
-    axes.add_collection3d(mplot3d.art3d.Poly3DCollection(stl_mesh.vectors))
+    axes.add_collection3d(mplot3d.art3d.Poly3DCollection(stl_mesh.vectors,color="blue"))
     axes.add_collection3d(mplot3d.art3d.Line3DCollection(stl_mesh.vectors,color="black",linewidth=0.5))
     axes.view_init(elev=35., azim=-45)
 
@@ -87,6 +99,11 @@ def createFrames():
     # Deactivate Axes
     plt.axis('off')
 
+    # Delete folder containing frames from previous runs
+    if os.path.exists(path):
+        shutil.rmtree(path)        
+
+    # Create a folder to contain the frames
     try: 
         os.makedirs(path)
     except OSError:
@@ -99,7 +116,7 @@ def createFrames():
     
         # Save frame
         frame_i = "frame_" + str(i)
-        print("Saved: " + str(frame_i))
+        print("Saved frames: " + str(i+1) + "/" + str(frames))
         plt.savefig(path + frame_i + ".png")
 
 # Loads frames and creates gif
@@ -115,23 +132,34 @@ def createGif():
 
 # Separate the string into a list of floats
 def getList(strlist,separator=","):
+    
+    try:
+        valueList = list(map(float,strlist.split(separator)))
+
+    except:
+        print("Error: Input the values only separated by a comma (,) . I.e: 1,0,0")
+        sys.exit(2)
+
+
+    
     return list(map(float,strlist.split(separator)))
 
 
 # MAIN
 def main(argv):
-
-    global inputfile, outputfile
-
+    
+    # Main variables
+    global inputfile, outputfile, path
+    
     # GIFs parameters
     global frames, duration_frame
-
+    
     # Visualization parameters
     global init_angle, elevation, rotation_axises, rotation_angle, x_offset, y_offset, z_offset
                
 
     try:
-         opts, args = getopt.getopt(argv,"hi:o:r:n:t:a:e:d:r:",["help","ifile=","ofile=","nframe=", "duration=", "initangle=", "elevation=", "rotation=", "rotation_axis=", "offset="])
+         opts, args = getopt.getopt(argv,"hi:o:pr:n:t:a:e:d:r:",["help","ifile=","ofile=","nframes=", "duration=", "initangle=", "elevation=", "rotation=", "rotation_axis=", "offset=","path="])
     except getopt.GetoptError:
          print('Error')
          sys.exit(2)
@@ -144,17 +172,18 @@ def main(argv):
             
             print("-i arg : Input the file to be get the frames for the gif (also --ifile)")
             print("-o arg : Output filename of the gif (also --ofile)")
+            print("-p arg : Folder in where the frames will be saved (also --path). Default: frames/")
             
             print("-n arg : Amount of frames to generate (also --nframes). Default: 25")
-            print("-t arg : Duration of each frame (also --duration). Default: 0.1")            
+            print("-t arg : Duration of display of each frame (also --duration). Default: 0.1")            
            
-            print("-a arg : Angle of the first frame (also --initangle). Default: -80")
-            print("-e arg : Elevation of the stl (also --elevation). Default: 8")
+            print("-a arg : Starting angle of the first frame (also --initangle). Default: 0")
+            print("-e arg : Elevation of the STL (also --elevation). Default: 0")
             
-            print("-d arg : Degrees to rotate the stl (also --rotation_angle). Default: 90")
-            print("-r arg : Specify the rotation of the stl (also --rotation_axis). Default: [0,1,0]")
+            print("-d arg : Degrees to rotate the stl (also --rotation_angle). Default: 0")
+            print("-r arg : Specify the rotation axis of the STL (also --rotation_axis). Default: [1,0,0]")
             
-            print("--offset arg : Offset of the stl. Default: [0,0,0]")
+            print("--offset arg : Displaces the center from which the STL will revolve. Default: [0,0,0]")
 
             sys.exit()
             
@@ -162,9 +191,12 @@ def main(argv):
             inputfile = arg        
             
         elif opt in ("-o", "--ofile"):
-            outputfile = arg + ".gif"         
+            outputfile = arg + ".gif"
+
+        elif opt in ("-p", "--path"):
+            path = arg       
             
-        elif opt in ("-n", "--nframe"):
+        elif opt in ("-n", "--nframes"):
             frames = int(arg)
             
         elif opt in ("-t", "--duration"):
@@ -183,23 +215,29 @@ def main(argv):
             rotation_axises = getList(arg)   
             
         elif opt in ("--offset"):
-            offsets = getList(arg)   
-            
+            offsets = getList(arg)
+
             x_offset = offsets[0]
             y_offset = offsets[1]
-            z_offset = offsets[2]  
-            
+            z_offset = offsets[2]
     
-    print("Started")
+    
     initialize()
+    
+    print("Loading STL")
     loadSTL()
     rotateSTL()
+    
+    print("Creating frames")
     createFrames()
+    
     print("Creating gif")
     createGif()
+    
     print("Finished")
     
 if __name__ == "__main__":
+    print("Started")
     main(sys.argv[1:])
     
 
