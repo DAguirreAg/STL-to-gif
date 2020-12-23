@@ -93,7 +93,7 @@ def createFrames():
     axes.view_init(elev=35., azim=-45)
 
     # Auto scale to the mesh size
-    scale = stl_mesh.points.flatten(-1)
+    scale = stl_mesh.points.flatten()#-1)
     axes.auto_scale_xyz(scale, scale, scale)
 
     # Deactivate Axes
