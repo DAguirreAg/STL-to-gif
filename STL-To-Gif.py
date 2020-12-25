@@ -34,7 +34,7 @@ x_offset = 0
 y_offset = 0
 z_offset = 0
 
-path = "frames/"
+path = os.path.join(os.getcwd(), "frames")
 
 # Checks that input paratmeters are correct
 def initialize():
@@ -110,14 +110,16 @@ def createFrames():
         if not os.path.isdir(path):
             raise
 
+    print(f'init_angle: {init_angle}')
     for i in range(frames):    
         # Rotate the view
+
         axes.view_init(elev=elevation, azim=init_angle + 360/frames*i)
     
         # Save frame
-        frame_i = "frame_" + str(i)
+        frame_i = "frame_" + str(i) + ".png"
         print("Saved frames: " + str(i+1) + "/" + str(frames))
-        plt.savefig(path + frame_i + ".png")
+        plt.savefig(os.path.join(path, frame_i))
 
 # Loads frames and creates gif
 def createGif():
@@ -159,9 +161,9 @@ def main(argv):
                
 
     try:
-         opts, args = getopt.getopt(argv,"hi:o:pr:n:t:a:e:d:r:",["help","ifile=","ofile=","nframes=", "duration=", "initangle=", "elevation=", "rotation=", "rotation_axis=", "offset=","path="])
+         opts, args = getopt.getopt(argv,"hi:o:p:n:t:a:e:d:r:",["help","ifile=","ofile=","nframes=", "duration=", "initangle=", "elevation=", "rotation_angle=", "rotation_axis=", "offset=","path="])
     except getopt.GetoptError:
-         print('Error')
+         print('Error in args')
          sys.exit(2)
 
     for opt, arg in opts:
@@ -172,10 +174,10 @@ def main(argv):
             
             print("-i arg : Input the file to be get the frames for the gif (also --ifile)")
             print("-o arg : Output filename of the gif (also --ofile)")
-            print("-p arg : Folder in where the frames will be saved (also --path). Default: frames/")
+            print("-p arg : Folder in where the frames will be saved (also --path). If it doesn't exist, it will be created automatically (Default folder: frames)")
             
             print("-n arg : Amount of frames to generate (also --nframes). Default: 25")
-            print("-t arg : Duration of display of each frame (also --duration). Default: 0.1")            
+            print("-t arg : Duration (in seconds) of display of each frame (also --duration). Default: 0.1")            
            
             print("-a arg : Starting angle of the first frame (also --initangle). Default: 0")
             print("-e arg : Elevation of the STL (also --elevation). Default: 0")
@@ -188,13 +190,15 @@ def main(argv):
             sys.exit()
             
         elif opt in ("-i", "--ifile"):
-            inputfile = arg        
+            inputfile = arg
+            print(inputfile)
             
         elif opt in ("-o", "--ofile"):
             outputfile = arg + ".gif"
 
         elif opt in ("-p", "--path"):
-            path = arg       
+            path = arg
+            path = os.path.join(os.getcwd(), path)
             
         elif opt in ("-n", "--nframes"):
             frames = int(arg)
@@ -209,6 +213,7 @@ def main(argv):
             elevation = float(arg)    
                 
         elif opt in ("-d", "--rotation_angle"):
+            print('asdawd')
             rotation_angle = float(arg)     
                                 
         elif opt in ("-r", "--rotation_axis"):            
