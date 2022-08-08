@@ -8,6 +8,17 @@ This repository contains a Python script to create a gif file from a STL file. T
   <img src="/Examples/T_Rex_skull.gif" alt="Output gif file" width="200">
 </p>
 
+## This fork
+#### Additions
+
+* `color` : Specify the color for the model in any matplotlib accepted format
+* `linecolor` : wireframe line colour as above
+* `linewidth` : wireframe line size, defaults to 0.01 now
+* `outwidth`  : matplotlib document width
+* `outheight` : matplotlib document height
+* `format` : use `mov` here to invoke ffmpeg
+* `fps` : if in `mov` mode, specify the fps
+
 ## How to use
 #### Basics
 Open a terminal and run the python script passing the STL filename with the `-i` option as follow:
@@ -35,7 +46,7 @@ Sometimes the STL's position, angle, rotation axis,... are not the most desired 
 For those cases in which the STL model's original orientation is not the most desired one, the following options are available to change the orientation:
 
 * `--rotation_angle`: Degrees to rotate the STL model.
-* `--rotation_axis`: Specify the rotation axis of the STL. 
+* `--rotation_axis`: Specify the rotation axis of the STL.
 
 In below example the STL model was rotated 45° around the X axis.
 
@@ -59,7 +70,7 @@ In below example the camera's elevation was modified to 20°.
 
 
 ##### Other options
-* `--initangle`: Starting angle of the first frame. 
+* `--initangle`: Starting angle of the first frame.
 
 <p align="middle">
   <img src="/Resources/bulbasaur_initangle_0.png" alt="Initial frame with default initial angle" width="200">
