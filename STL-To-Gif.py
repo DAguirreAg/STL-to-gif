@@ -129,7 +129,7 @@ def createGif():
     for file_name in ordered_files:
         if file_name.endswith('.png'):
             file_path = os.path.join(path, file_name)
-            images.append(imageio.imread(file_path))
+            images.append(imageio.v2.imread(file_path))
     imageio.mimsave(outputfile, images, duration = duration_frame)
 
 # Separate the string into a list of floats
