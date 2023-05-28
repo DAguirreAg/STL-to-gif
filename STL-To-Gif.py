@@ -85,7 +85,7 @@ def createFrames():
     
     # Create a new plot
     figure = plt.figure()
-    axes = mplot3d.Axes3D(figure)
+    axes = figure.add_subplot(projection='3d')
 
     # Add STL vectors to the plot
     axes.add_collection3d(mplot3d.art3d.Poly3DCollection(stl_mesh.vectors,color="blue"))
@@ -129,7 +129,7 @@ def createGif():
     for file_name in ordered_files:
         if file_name.endswith('.png'):
             file_path = os.path.join(path, file_name)
-            images.append(imageio.imread(file_path))
+            images.append(imageio.v2.imread(file_path))
     imageio.mimsave(outputfile, images, duration = duration_frame)
 
 # Separate the string into a list of floats
