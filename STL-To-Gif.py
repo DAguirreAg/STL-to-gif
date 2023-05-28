@@ -85,7 +85,7 @@ def createFrames():
     
     # Create a new plot
     figure = plt.figure()
-    axes = mplot3d.Axes3D(figure)
+    axes = figure.add_subplot(projection='3d')
 
     # Add STL vectors to the plot
     axes.add_collection3d(mplot3d.art3d.Poly3DCollection(stl_mesh.vectors,color="blue"))
